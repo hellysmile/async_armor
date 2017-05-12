@@ -1,4 +1,4 @@
-import asyncio
+import asyncio  # noqa # isort:skip
 import logging
 import warnings
 import weakref
@@ -8,20 +8,11 @@ from threading import local
 
 logger = logging.getLogger(__name__)
 
+__version__ = '0.0.1'
+
 _locals = local()
 
 not_set = ...
-
-
-def iscoroutinepartial(fn):
-    # http://bugs.python.org/issue23519
-
-    parent = fn
-
-    while fn is not None:
-        parent, fn = fn, getattr(parent, 'func', None)
-
-    return asyncio.iscoroutinefunction(parent)
 
 
 def unpartial(fn):
@@ -31,14 +22,20 @@ def unpartial(fn):
     return fn
 
 
-def create_future(*, loop):
+def create_future(*, loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
+
     try:
         return loop.create_future()
     except AttributeError:
         return asyncio.Future(loop=loop)
 
 
-def create_task(*, loop):
+def create_task(*, loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
+
     try:
         return loop.create_task
     except AttributeError:
@@ -220,7 +217,7 @@ class Armor(metaclass=ArmorMeta):
         @asyncio.coroutine
         def decorator(*args, **kwargs):
             if self._closing:
-                raise RuntimeError('armor is closed')
+                raise RuntimeError('armor is closing')
 
             if isinstance(self.loop, str):
                 assert self.cls ^ self.kwargs, 'choose self.loop or kwargs["loop"]'  # noqa
@@ -300,7 +297,7 @@ def armor(fn=None, *, cls=False, kwargs=False, loop=None):
     if fn is None:
         return wrapper
 
-    if iscoroutinepartial(fn):
+    if asyncio.iscoroutinefunction(unpartial(fn)):
         return wrapper(fn)
 
     assert not cls, 'shield like wrapper do not support cls'
