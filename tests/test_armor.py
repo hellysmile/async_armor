@@ -34,6 +34,27 @@ def test_shield(loop):
 
 @pytest.mark.run_loop
 @asyncio.coroutine
+def test_shield_wait_closed(loop):
+    asyncio.set_event_loop(loop)
+
+    c = 0
+
+    @asyncio.coroutine
+    def coro():
+        nonlocal c
+        yield from asyncio.sleep(SLEEP_MORE)
+        c = 1
+
+    task = armor(coro())
+    task.cancel()
+
+    yield from task.wait_closed()
+
+    assert c == 1
+
+
+@pytest.mark.run_loop
+@asyncio.coroutine
 def test_shield_many(loop):
     asyncio.set_event_loop(loop)
 
