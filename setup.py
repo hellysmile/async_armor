@@ -25,7 +25,7 @@ setup(
     version=get_version(),
     author='wikibusiness',
     author_email='osf@wikibusiness.org',
-    url='https://github.com/wikibusiness/async_armor.py',
+    url='https://github.com/wikibusiness/async_armor',
     description='Graceful drop-in replacement for asyncio.shield',
     long_description=read('README.rst'),
     extras_require={
