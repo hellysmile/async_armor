@@ -5,10 +5,9 @@ from functools import partial
 
 import pytest
 
-from async_armor import armor, create_task
+from async_armor import armor
 
-SLEEP_MORE = 0.1
-SLEEP_LESS = 0.05
+SLEEP = 0.1
 
 
 @pytest.mark.run_loop
@@ -22,15 +21,10 @@ def test_default_loop(loop):
     @asyncio.coroutine
     def coro():
         nonlocal c
-        yield from asyncio.sleep(SLEEP_MORE)
+        yield from asyncio.sleep(SLEEP)
         c = 1
 
-    @asyncio.coroutine
-    def inner():
-        yield from coro()
-
-    task = create_task()(inner())
-    yield from asyncio.sleep(SLEEP_LESS)
+    task = asyncio.ensure_future(coro())
     task.cancel()
 
     armor.close()
@@ -48,15 +42,10 @@ def test_explicit_loop(loop):
     @asyncio.coroutine
     def coro():
         nonlocal c
-        yield from asyncio.sleep(SLEEP_MORE, loop=loop)
+        yield from asyncio.sleep(SLEEP, loop=loop)
         c = 1
 
-    @asyncio.coroutine
-    def inner():
-        yield from coro()
-
-    task = create_task(loop=loop)(inner())
-    yield from asyncio.sleep(SLEEP_LESS, loop=loop)
+    task = asyncio.ensure_future(coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -74,15 +63,10 @@ def test_kwargs_loop(loop):
     @asyncio.coroutine
     def coro(*, _loop):
         nonlocal c
-        yield from asyncio.sleep(SLEEP_MORE, loop=_loop)
+        yield from asyncio.sleep(SLEEP, loop=_loop)
         c = 1
 
-    @asyncio.coroutine
-    def inner():
-        yield from coro(_loop=loop)
-
-    task = create_task(loop=loop)(inner())
-    yield from asyncio.sleep(SLEEP_LESS, loop=loop)
+    task = asyncio.ensure_future(coro(_loop=loop), loop=loop)
     task.cancel()
 
     armor.close()
@@ -104,15 +88,10 @@ def test_cls_loop(loop):
         @asyncio.coroutine
         def coro(self):
             nonlocal c
-            yield from asyncio.sleep(SLEEP_MORE, loop=self._loop)
+            yield from asyncio.sleep(SLEEP, loop=self._loop)
             c = 1
 
-    @asyncio.coroutine
-    def inner():
-        yield from Obj(loop=loop).coro()
-
-    task = create_task(loop=loop)(inner())
-    yield from asyncio.sleep(SLEEP_LESS, loop=loop)
+    task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -135,15 +114,10 @@ def test_deco_cls_partial_loop(loop):
         @asyncio.coroutine
         def _coro(self):
             nonlocal c
-            yield from asyncio.sleep(SLEEP_MORE, loop=self._loop)
+            yield from asyncio.sleep(SLEEP, loop=self._loop)
             c = 1
 
-    @asyncio.coroutine
-    def inner():
-        yield from Obj(loop=loop).coro()
-
-    task = create_task(loop=loop)(inner())
-    yield from asyncio.sleep(SLEEP_LESS, loop=loop)
+    task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -168,17 +142,12 @@ if sys.version_info >= (3, 4, 0):
             @asyncio.coroutine
             def _coro(self):
                 nonlocal c
-                yield from asyncio.sleep(SLEEP_MORE, loop=self._loop)
+                yield from asyncio.sleep(SLEEP, loop=self._loop)
                 c = 1
 
             coro = partialmethod(_coro)
 
-        @asyncio.coroutine
-        def inner():
-            yield from Obj(loop=loop).coro()
-
-        task = create_task(loop=loop)(inner())
-        yield from asyncio.sleep(SLEEP_LESS, loop=loop)
+        task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
         task.cancel()
 
         armor.close()

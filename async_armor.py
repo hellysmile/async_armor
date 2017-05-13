@@ -2,9 +2,15 @@ import asyncio  # noqa # isort:skip
 import logging
 import warnings
 import weakref
-from functools import partial, wraps
+from functools import wraps
 from operator import itemgetter
 from threading import local
+
+try:
+    from asyncio import ensure_future
+except ImportError:
+    ensure_future = getattr(asyncio, 'async')
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,19 +36,6 @@ def create_future(*, loop=None):
         return loop.create_future()
     except AttributeError:
         return asyncio.Future(loop=loop)
-
-
-def create_task(*, loop=None):
-    if loop is None:
-        loop = asyncio.get_event_loop()
-
-    try:
-        return loop.create_task
-    except AttributeError:
-        try:
-            return partial(asyncio.ensure_future, loop=loop)
-        except AttributeError:
-            return partial(getattr(asyncio, 'async'), loop=loop)
 
 
 class staticproperty(property):  # noqa
@@ -192,7 +185,7 @@ class Armor(metaclass=ArmorMeta):
         if loop is None:
             loop = asyncio.get_event_loop()
 
-        inner = create_task(loop=loop)(arg)
+        inner = ensure_future(arg, loop=loop)
 
         inner.add_done_callback(self._close_armor)
 
@@ -214,7 +207,6 @@ class Armor(metaclass=ArmorMeta):
         )
 
         @wraps(fn)
-        @asyncio.coroutine
         def decorator(*args, **kwargs):
             if self._closing:
                 raise RuntimeError('armor is closing')
@@ -239,7 +231,7 @@ class Armor(metaclass=ArmorMeta):
 
             coro = fn(*args, **kwargs)
 
-            inner = create_task(loop=_loop)(coro)
+            inner = ensure_future(coro, loop=_loop)
 
             return self._armor(inner, loop=_loop)
 

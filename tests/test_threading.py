@@ -3,8 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from async_armor import ArmorMeta, armor
 
-SLEEP_MORE = 0.1
-SLEEP_LESS = 0.05
+SLEEP = 0.1
 
 
 def thread():
@@ -16,7 +15,7 @@ def thread():
     @asyncio.coroutine
     def coro():
         nonlocal c
-        yield from asyncio.sleep(SLEEP_MORE)
+        yield from asyncio.sleep(SLEEP)
         c = 1
 
     assert len(ArmorMeta.objects) == 0

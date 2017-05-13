@@ -4,8 +4,7 @@ import pytest
 
 from async_armor import armor
 
-SLEEP_MORE = 0.1
-SLEEP_LESS = 0.05
+SLEEP = 0.1
 
 
 @pytest.mark.run_loop

@@ -43,7 +43,6 @@ Usage
         task.cancel()
 
         task = asyncio.ensure_future(call_deco())
-        await asyncio.sleep(0)
         task.cancel()
 
     loop = asyncio.get_event_loop()
