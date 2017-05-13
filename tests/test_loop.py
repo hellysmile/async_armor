@@ -5,7 +5,7 @@ from functools import partial
 
 import pytest
 
-from async_armor import armor
+from async_armor import armor, ensure_future
 
 SLEEP = 0.1
 
@@ -24,7 +24,7 @@ def test_default_loop(loop):
         yield from asyncio.sleep(SLEEP)
         c = 1
 
-    task = asyncio.ensure_future(coro())
+    task = ensure_future(coro())
     task.cancel()
 
     armor.close()
@@ -45,7 +45,7 @@ def test_explicit_loop(loop):
         yield from asyncio.sleep(SLEEP, loop=loop)
         c = 1
 
-    task = asyncio.ensure_future(coro(), loop=loop)
+    task = ensure_future(coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -66,7 +66,7 @@ def test_kwargs_loop(loop):
         yield from asyncio.sleep(SLEEP, loop=_loop)
         c = 1
 
-    task = asyncio.ensure_future(coro(_loop=loop), loop=loop)
+    task = ensure_future(coro(_loop=loop), loop=loop)
     task.cancel()
 
     armor.close()
@@ -91,7 +91,7 @@ def test_cls_loop(loop):
             yield from asyncio.sleep(SLEEP, loop=self._loop)
             c = 1
 
-    task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
+    task = ensure_future(Obj(loop=loop).coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -117,7 +117,7 @@ def test_deco_cls_partial_loop(loop):
             yield from asyncio.sleep(SLEEP, loop=self._loop)
             c = 1
 
-    task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
+    task = ensure_future(Obj(loop=loop).coro(), loop=loop)
     task.cancel()
 
     armor.close()
@@ -147,7 +147,7 @@ if sys.version_info >= (3, 4, 0):
 
             coro = partialmethod(_coro)
 
-        task = asyncio.ensure_future(Obj(loop=loop).coro(), loop=loop)
+        task = ensure_future(Obj(loop=loop).coro(), loop=loop)
         task.cancel()
 
         armor.close()

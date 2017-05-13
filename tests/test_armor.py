@@ -3,7 +3,7 @@ from functools import partial
 
 import pytest
 
-from async_armor import armor
+from async_armor import armor, ensure_future
 
 
 SLEEP = 0.1
@@ -48,7 +48,7 @@ def test_shield_inner(loop):
     def inner():
         yield from armor(coro())
 
-    task = asyncio.ensure_future(inner())
+    task = ensure_future(inner())
     yield from asyncio.sleep(SLEEP / 2)
     task.cancel()
 
@@ -121,7 +121,7 @@ def test_deco(loop):
         yield from asyncio.sleep(SLEEP)
         c = 1
 
-    task = asyncio.ensure_future(coro())
+    task = ensure_future(coro())
     task.cancel()
 
     armor.close()
@@ -148,7 +148,7 @@ def test_deco_inner(loop):
     def inner():
         yield from coro()
 
-    task = asyncio.ensure_future(inner())
+    task = ensure_future(inner())
     yield from asyncio.sleep(SLEEP / 2)
     task.cancel()
 
@@ -172,7 +172,7 @@ def test_deco_call(loop):
         yield from asyncio.sleep(SLEEP)
         c = 1
 
-    task = asyncio.ensure_future(coro())
+    task = ensure_future(coro())
     task.cancel()
 
     armor.close()
@@ -195,7 +195,7 @@ def test_deco_close(loop):
         yield from asyncio.sleep(SLEEP)
         c = 1
 
-    task = asyncio.ensure_future(coro())
+    task = ensure_future(coro())
     task.cancel()
 
     coro.close()
@@ -218,7 +218,7 @@ def test_deco_partial(loop):
         yield from asyncio.sleep(SLEEP)
         c = 1
 
-    task = asyncio.ensure_future(partial(coro)())
+    task = ensure_future(partial(coro)())
     task.cancel()
 
     armor.close()
