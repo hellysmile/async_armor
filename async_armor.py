@@ -274,8 +274,6 @@ class Armor(metaclass=ArmorMeta):
 
         self._closed = True
 
-        assert not self._futures, 'zombie futures detected'
-
         if not self.__decorated:
             return ret[0] if ret else None
         else:
